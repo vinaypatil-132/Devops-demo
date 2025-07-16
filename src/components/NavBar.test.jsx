@@ -1,40 +1,77 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import NavBar from "./Navbar";
-import "@testing-library/jest-dom"; // for extra matchers
+import "@testing-library/jest-dom";
 
 describe("NavBar Component", () => {
-  test("renders welcome message with name and roll", () => {
+  test("renders with name and roll props", () => {
     render(<NavBar name="Vinay" roll="123" />);
 
-    expect(screen.getByText(/Welcome, Vinay/i)).toBeInTheDocument();
-    expect(screen.getByText(/Your Roll Number is/i)).toBeInTheDocument();
+    expect(screen.getByText((_, element) =>
+      element.textContent === "Welcome, Vinay 👋"
+    )).toBeInTheDocument();
+
+    expect(screen.getByText((_, element) =>
+      element.textContent === "Your Roll Number is 123"
+    )).toBeInTheDocument();
   });
 
-  test("increases counter on button click", () => {
+
+  test("increments and decrements the count", () => {
     render(<NavBar name="Vinay" roll="123" />);
 
-    const button = screen.getByText("+1 Click");
-    fireEvent.click(button);
+    const plusOneButton = screen.getByText("+1 Click");
+    const minusOneButton = screen.getByText("-1 Click");
+    const countText = () => screen.getByText(/You clicked/i);
 
-    expect(screen.getByText(/You clicked 1/i)).toBeInTheDocument();
+    // Initial state
+    expect(countText()).toHaveTextContent("You clicked 0 times");
+
+    // Increment by 1
+    fireEvent.click(plusOneButton);
+    expect(countText()).toHaveTextContent("You clicked 1 time");
+
+    // Decrement by 1
+    fireEvent.click(minusOneButton);
+    expect(countText()).toHaveTextContent("You clicked 0 times");
   });
 
-  test("resets counter on reset button click", () => {
+  test("reset button resets the count to 0", () => {
     render(<NavBar name="Vinay" roll="123" />);
 
-    fireEvent.click(screen.getByText("+1 Click"));
-    fireEvent.click(screen.getByText("Reset"));
+    const plusTwoButton = screen.getByText("+2 Click");
+    const resetButton = screen.getByText("Reset");
 
-    expect(screen.getByText(/You clicked 0/i)).toBeInTheDocument();
+    // Click +2 twice => count = 4
+    fireEvent.click(plusTwoButton);
+    fireEvent.click(plusTwoButton);
+
+    expect(
+      screen.getByText(
+        (_, element) => element.textContent === "You clicked 4 times."
+      )
+    ).toBeInTheDocument();
+
+    // Reset => count = 0
+    fireEvent.click(resetButton);
+    expect(
+      screen.getByText(
+        (_, element) => element.textContent === "You clicked 0 times."
+      )
+    ).toBeInTheDocument();
   });
 
-test("theme toggle updates icon", () => {
-  render(<NavBar name="Vinay" roll="123" />);
-  const themeButton = screen.getByTestId("theme-toggle");
+  test("theme toggle changes icon and text", () => {
+    render(<NavBar name="Vinay" roll="123" />);
 
-  fireEvent.click(themeButton);
+    const toggleButton = screen.getByTestId("theme-toggle");
 
-  expect(screen.getByLabelText("sun")).toBeInTheDocument();
-});
+    // Default mode is light, so icon should be 🌙 (suggesting to go dark)
+    expect(toggleButton).toHaveTextContent("🌙");
+    expect(toggleButton).toHaveTextContent("Dark");
 
+    // Click to switch to dark mode
+    fireEvent.click(toggleButton);
+    expect(toggleButton).toHaveTextContent("🌞");
+    expect(toggleButton).toHaveTextContent("Light");
+  });
 });
