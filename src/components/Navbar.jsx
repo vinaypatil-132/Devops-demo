@@ -46,6 +46,8 @@ function NavBar({ name, roll }) {
             onClick={toggleTheme}
             className="btn btn-outline-light d-flex align-items-center gap-2"
             style={{ transition: "all 0.3s ease" }}
+            aria-label="toggle theme"
+            data-testid="theme-toggle"
           >
             <span
               className={`animate__animated ${
